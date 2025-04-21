@@ -87,7 +87,7 @@ function dictionaryAttack(
       console.log(`Checking: ${password} → Hash: ${hashedPassword}`);
 
       if (hashedPassword === hash) {
-        console.log(" Password found in dictionary:", password);
+        console.log("Password found in dictionary:", password);
         return password; // Return the cracked password
       }
     }
