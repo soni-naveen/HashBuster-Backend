@@ -22,27 +22,39 @@ function compareHash(password, hashedPassword, algorithm = "sha256") {
 }
 
 //  Brute-force attack (Checks short passwords)
-function bruteForceCrack(hash, algorithm = "sha256") {
-  console.log("Brute-force cracking started for:", hash, "using", algorithm);
+function bruteForceCrack(targetHash, algorithm = "sha256") {
+  console.log(
+    "Brute-force cracking started for:",
+    targetHash,
+    "using",
+    algorithm
+  );
 
-  const charset = "abcdefghijklmnopqrstuvwxyz0123456789#@!$"; // Characters to use for brute force
-  const maxLength = 4; // Limits brute force length to avoid long execution times
+  const charset = "abcdefghijklmnopqrstuvwxyz0123456789@";
+  const maxLength = 5;
 
-  function generatePermutations(current) {
-    if (current.length > maxLength) return null; // Stop if the length exceeds maxLength
+  const stack = [""]; // Start with an empty string
+
+  while (stack.length > 0) {
+    const current = stack.pop();
+
+    // Skip if length exceeds maxLength
+    if (current.length > maxLength) continue;
+
+    // Generate hash and compare
     const generatedHash = hashPassword(current, algorithm);
-    if (generatedHash === hash) {
-      console.log(` Brute-force cracked: ${current}`);
-      return current; // Return the cracked password
+    if (generatedHash === targetHash) {
+      console.log(`Brute-force cracked: ${current}`);
+      return current;
     }
-    for (let char of charset) {
-      const result = generatePermutations(current + char); // Recursively generate permutations
-      if (result) return result;
+
+    // Add next characters to the stack
+    for (let i = 0; i < charset.length; i++) {
+      stack.push(current + charset[i]);
     }
-    return null;
   }
 
-  return generatePermutations("") || "Password not found"; // Start with an empty string
+  return "Password not found";
 }
 
 //  Dictionary attack (Checks words in dictionary file)
