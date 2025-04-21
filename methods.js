@@ -52,11 +52,11 @@ function dictionaryAttack(
   dictionaryFile = "dictionary.txt"
 ) {
   const filePath = path.join(__dirname, dictionaryFile); // Get full path to dictionary file
-  console.log("📖 Looking for dictionary file at:", filePath);
+  console.log("Looking for dictionary file at:", filePath);
 
   // Ensure dictionary file exists
   if (!fs.existsSync(filePath)) {
-    console.error("⚠️ Dictionary file NOT found at:", filePath);
+    console.error("Dictionary file NOT found at:", filePath);
     return "Error: Dictionary file missing";
   }
 
@@ -72,7 +72,7 @@ function dictionaryAttack(
 
       const hashedPassword = hashPassword(password, algorithm); // Hash the current password
 
-      console.log(`🔍 Checking: ${password} → Hash: ${hashedPassword}`);
+      console.log(`Checking: ${password} → Hash: ${hashedPassword}`);
 
       if (hashedPassword === hash) {
         console.log(" Password found in dictionary:", password);
@@ -80,10 +80,10 @@ function dictionaryAttack(
       }
     }
 
-    console.log("❌ Password not found in dictionary");
+    console.log("Password not found in dictionary");
     return "Password not found";
   } catch (error) {
-    console.error("⚠️ Error reading dictionary file:", error.message);
+    console.error("Error reading dictionary file:", error.message);
     return "Error: Unable to read dictionary file";
   }
 }
@@ -91,40 +91,48 @@ function dictionaryAttack(
 //  Rainbow table attack (Fully implemented)
 function rainbowTableAttack(
   hash,
-  algorithm = "sha256",
+  algorithm = "sha1", // or "md5"
   rainbowTableFile = "rainbow_table.txt"
 ) {
-  const filePath = path.join(__dirname, rainbowTableFile); // Get full path to rainbow table file
-  console.log("🌈 Looking for rainbow table file at:", filePath);
+  const filePath = path.join(__dirname, rainbowTableFile);
+  console.log("Looking for rainbow table file at:", filePath);
 
-  // Ensure rainbow table file exists
   if (!fs.existsSync(filePath)) {
-    console.error("⚠️ Rainbow table file NOT found at:", filePath);
+    console.error("Rainbow table file NOT found at:", filePath);
     return "Error: Rainbow table file missing";
   }
 
   try {
-    // Read rainbow table file with UTF-8 encoding
     const table = fs
       .readFileSync(filePath, { encoding: "utf8", flag: "r" })
       .split("\n");
 
-    // Search for the hash in the table
     for (let entry of table) {
-      entry = entry.trim(); // Remove extra spaces and line breaks
-      if (!entry) continue; // Skip empty lines
+      entry = entry.trim();
+      if (!entry) continue;
 
-      const [hashedPassword, password] = entry.split(":"); // Split hash and password
-      if (hashedPassword === hash) {
-        console.log(" Password found in rainbow table:", password);
-        return password; // Return the cracked password
+      // Expected format: password | MD5: <md5> | SHA1: <sha1>
+      const [passwordPart, md5Part, sha1Part] = entry
+        .split("|")
+        .map((part) => part.trim());
+
+      const password = passwordPart;
+      const md5Hash = md5Part?.split("MD5:")[1]?.trim();
+      const sha1Hash = sha1Part?.split("SHA1:")[1]?.trim();
+
+      if (
+        (algorithm.toLowerCase() === "md5" && hash === md5Hash) ||
+        (algorithm.toLowerCase() === "sha1" && hash === sha1Hash)
+      ) {
+        console.log("Password found in rainbow table:", password);
+        return password;
       }
     }
 
-    console.log("❌ Password not found in rainbow table");
+    console.log("Password not found in rainbow table");
     return "Password not found";
   } catch (error) {
-    console.error("⚠️ Error reading rainbow table file:", error.message);
+    console.error("Error reading rainbow table file:", error.message);
     return "Error: Unable to read rainbow table file";
   }
 }
